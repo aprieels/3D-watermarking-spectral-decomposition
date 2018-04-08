@@ -1,0 +1,20 @@
+INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/tools)
+
+FILE(GLOB SRC_FILES *.cpp)
+FILE(GLOB INC_FILES *.h)
+FILE(GLOB DEP_FILES *.i)
+
+ADD_SUBDIRECTORY(Attributes)
+ADD_SUBDIRECTORY(WireNetwork)
+ADD_SUBDIRECTORY(Tiler)
+ADD_SUBDIRECTORY(Misc)
+ADD_SUBDIRECTORY(Inflator)
+ADD_SUBDIRECTORY(Interfaces)
+ADD_SUBDIRECTORY(Parameters)
+
+ADD_LIBRARY(lib_wires SHARED ${SRC_FILES} ${INC_FILES})
+TARGET_LINK_LIBRARIES(lib_wires Mesh lib_MeshUtils lib_convex_hull
+    lib_triangle_wrapper lib_boolean lib_tetgen_wrapper)
+SET_TARGET_PROPERTIES(lib_wires PROPERTIES OUTPUT_NAME "wires")
+
+ADD_CUSTOM_TARGET(wires DEPENDS lib_wires)
