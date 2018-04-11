@@ -6,7 +6,7 @@ import numpy
 from context import partitioning
 from context import spectral_decomposition
 
-def insert_extract(filename_in = os.path.join(os.path.dirname(__file__), 'source_models/dragon.ply'), data = [random.randrange(2) for _ in range(64)], filename_out = os.path.join(os.path.dirname(__file__), 'watermarked_models/out.obj'), secret=123456, i0 = 0):
+def insert_extract(filename_in = os.path.join(os.path.dirname(__file__), 'source_models/bunny.obj'), data = [random.randrange(2) for _ in range(64)], filename_out = os.path.join(os.path.dirname(__file__), 'watermarked_models/out.obj'), secret=123456, i0 = 50):
 
     print data
 
