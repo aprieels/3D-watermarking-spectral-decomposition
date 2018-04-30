@@ -46,173 +46,153 @@ def layers_partitioning(faces, vertices, partitions):
     interval_z = (max_z-min_z)/partitions
 
     cut_value = min_z + interval_z
-    remaining = faces
+    remaining_faces = faces
 
-    for i in range(partitions):
-        below = []
-        below_vertices = []
-        above = []
-        indexes_match = numpy.subtract(numpy.zeros(4*len(vertices)), 1)
-        
-        for face in remaining:
-            v1, v2, v3 = sorted([[vertices[face[0]], face[0]], [vertices[face[1]], face[1]], [vertices[face[2]], face[2]]], key=getKey)
+    already_computed_intersections = []
 
-            vertice1 = v1[0]
-            index1 = v1[1]
-            vertice2 = v2[0]
-            index2 = v2[1]
-            vertice3 = v3[0]
-            index3 = v3[1]
+    for _ in range(partitions):
 
-            if vertice3[2] <= cut_value:
-                i1 = indexes_match[face[0]]
-                i2 = indexes_match[face[1]]
-                i3 = indexes_match[face[2]]
-
-                if (i1 == -1):
-                    below_vertices.append(vertices[face[0]])
-                    i1 = len(below_vertices) - 1
-                    indexes_match[face[0]] = i1
-                    
-                if (i2 == -1):
-                    below_vertices.append(vertices[face[1]])
-                    i2 = len(below_vertices) - 1
-                    indexes_match[face[1]] = i2
-
-                if (i3 == -1):
-                    below_vertices.append(vertices[face[2]])
-                    i3 = len(below_vertices) - 1
-                    indexes_match[face[2]] = i3
-
-                below.append([i1, i2, i3])
-            elif vertice2[2] < cut_value:
-                x1 = round((cut_value-vertice3[2])*(vertice2[0]-vertice3[0])/(vertice2[2]-vertice3[2]) + vertice3[0], 10)
-                y1 = round((cut_value-vertice3[2])*(vertice2[1]-vertice3[1])/(vertice2[2]-vertice3[2]) + vertice3[1], 10)
-                intersection1 = [x1, y1, cut_value]
-                idx_inter1 = -1
-
-                for idx, vertice in enumerate(vertices[initial_num_vertices:]):
-                    if vertice[0] == intersection1[0] and vertice[1] == intersection1[1] and vertice[2] == intersection1[2]:
-                        idx_inter1 = initial_num_vertices + idx
-
-                if idx_inter1 == -1:
-                    vertices = numpy.concatenate((vertices, [intersection1]))
-                    idx_inter1 = len(vertices)-1
-
-                x2 = round((cut_value-vertice3[2])*(vertice1[0]-vertice3[0])/(vertice1[2]-vertice3[2]) + vertice3[0], 10)
-                y2 = round((cut_value-vertice3[2])*(vertice1[1]-vertice3[1])/(vertice1[2]-vertice3[2]) + vertice3[1], 10)
-                intersection2 = [x2, y2, cut_value]
-                idx_inter2 = -1
-
-                for idx, vertice in enumerate(vertices[initial_num_vertices:]):
-                    if vertice[0] == intersection2[0] and vertice[1] == intersection2[1] and vertice[2] == intersection2[2]:
-                        idx_inter2 = initial_num_vertices + idx
-
-                if idx_inter2 == -1:
-                    vertices = numpy.concatenate((vertices, [intersection2]))
-                    idx_inter2 = len(vertices)-1
-
-                above.append([index3, idx_inter1, idx_inter2])
-
-                i1 = indexes_match[index1]
-                i2 = indexes_match[index2]
-                below_idx_i1 = indexes_match[idx_inter1]
-                below_idx_i2 = indexes_match[idx_inter2]
-                if (i1 == -1):
-                    below_vertices.append(vertices[index1])
-                    i1 = len(below_vertices) - 1
-                    indexes_match[index1] = i1
-                    
-                if (i2 == -1):
-                    below_vertices.append(vertices[index2])
-                    i2 = len(below_vertices) - 1
-                    indexes_match[index2] = i2
-                
-                if (below_idx_i1 == -1):
-                    below_vertices.append(vertices[idx_inter1])
-                    below_idx_i1 = len(below_vertices) - 1
-                    indexes_match[idx_inter1] = below_idx_i1
-
-                if (below_idx_i2 == -1):
-                    below_vertices.append(vertices[idx_inter2])
-                    below_idx_i2 = len(below_vertices) - 1
-                    indexes_match[idx_inter2] = below_idx_i2
-
-                below.append([below_idx_i1, below_idx_i2, i1])
-                below.append([i1, i2, below_idx_i1])
-            elif vertice1[2] < cut_value:
-                x1 = round((cut_value-vertice1[2])*(vertice2[0]-vertice1[0])/(vertice2[2]-vertice1[2]) + vertice1[0], 10)
-                y1 = round((cut_value-vertice1[2])*(vertice2[1]-vertice1[1])/(vertice2[2]-vertice1[2]) + vertice1[1], 10)
-                intersection1 = [x1, y1, cut_value]
-                idx_inter1 = -1
-
-                for idx, vertice in enumerate(vertices[initial_num_vertices:]):
-                    if vertice[0] == intersection1[0] and vertice[1] == intersection1[1] and vertice[2] == intersection1[2]:
-                        idx_inter1 = initial_num_vertices + idx
-
-                if idx_inter1 == -1:
-                    vertices = numpy.concatenate((vertices, [intersection1]))
-                    idx_inter1 = len(vertices)-1
-
-                x2 = round((cut_value-vertice1[2])*(vertice3[0]-vertice1[0])/(vertice3[2]-vertice1[2]) + vertice1[0], 10)
-                y2 = round((cut_value-vertice1[2])*(vertice3[1]-vertice1[1])/(vertice3[2]-vertice1[2]) + vertice1[1], 10)
-                intersection2 = [x2, y2, cut_value]
-                idx_inter2 = -1
-
-                for idx, vertice in enumerate(vertices[initial_num_vertices:]):
-                    if vertice[0] == intersection2[0] and vertice[1] == intersection2[1] and vertice[2] == intersection2[2]:
-                        idx_inter2 = initial_num_vertices + idx
-
-                if idx_inter2 == -1:
-                    vertices = numpy.concatenate((vertices, [intersection2]))
-                    idx_inter2 = len(vertices)-1
-
-                above.append([index2, index3, idx_inter2])
-                above.append([index2, idx_inter1, idx_inter2])
-
-                i1 = indexes_match[index1]
-                below_idx_i1 = indexes_match[idx_inter1]
-                below_idx_i2 = indexes_match[idx_inter2]
-                if (i1 == -1):
-                    below_vertices.append(vertices[index1])
-                    i1 = len(below_vertices) - 1
-                    indexes_match[index1] = i1
-                
-                if (below_idx_i1 == -1):
-                    below_vertices.append(vertices[idx_inter1])
-                    below_idx_i1 = len(below_vertices) - 1
-                    indexes_match[idx_inter1] = below_idx_i1
-
-                if (below_idx_i2 == -1):
-                    below_vertices.append(vertices[idx_inter2])
-                    below_idx_i2 = len(below_vertices) - 1
-                    indexes_match[idx_inter2] = below_idx_i2
-
-                below.append([i1, below_idx_i1, below_idx_i2])
-            else:
-                above.append(face)
+        patch, remaining_faces, vertices, already_computed_intersections = separate_vertices(remaining_faces, vertices, cut_value, initial_num_vertices, already_computed_intersections)
         cut_value += interval_z
-        remaining = above
-        disconnected_meshes = split_disconnected_meshes(pymesh.form_mesh(numpy.array(below_vertices), numpy.array(below)))
 
-        if type(disconnected_meshes) is list:
-            for mesh_part in disconnected_meshes:
-                patches.append(mesh_part)
-        else:
-            patches.append(disconnected_meshes)
+        disconnected_meshes = split_disconnected_meshes(patch)
 
-        #patches.append(pymesh.form_mesh(numpy.array(below_vertices), numpy.array(below)))
+        for mesh_part in disconnected_meshes:
+            patches.append(mesh_part)
 
     return patches
+
+
+def separate_vertices(remaining_faces, vertices, cut_value, initial_num_vertices, already_computed_intersections):
+
+    below = []
+    below_vertices = []
+    above = []
+    intersections_above = []
+
+    indexes_match = numpy.subtract(numpy.zeros(4*len(vertices)), 1)
+    
+    for face in remaining_faces:
+
+        vertice1, index1, vertice2, index2, vertice3, index3 = sort_vertices(vertices, face)
+
+        if vertice3[2] <= cut_value:
+
+            # All the vertices are under the cut_value, this means that the whole face can be added to this partition (below)
+
+            i1, below_vertices = find_index_or_add(face[0], indexes_match, below_vertices, vertices)
+            i2, below_vertices = find_index_or_add(face[1], indexes_match, below_vertices, vertices)
+            i3, below_vertices = find_index_or_add(face[2], indexes_match, below_vertices, vertices)
+
+            below.append([i1, i2, i3])
+
+        elif vertice2[2] < cut_value:
+
+            # Only one of the vertices is above the cut_value, this means that the triangle must be divided into three smaller triangles:
+            #   - One triangle is located above the cut_value and must be given to the next partition (above)
+            #   - Two triangles are located under the cut value and belong to this partition (below)
+
+            idx_inter1, vertices, new_intersection = compute_intersection(vertice3, vertice2, cut_value, vertices, initial_num_vertices, already_computed_intersections)
+            if new_intersection is not None :
+                already_computed_intersections.append(new_intersection)
+                intersections_above.append(new_intersection)
+
+            idx_inter2, vertices, new_intersection = compute_intersection(vertice3, vertice1, cut_value, vertices, initial_num_vertices, already_computed_intersections)
+            if new_intersection is not None :
+                already_computed_intersections.append(new_intersection)
+                intersections_above.append(new_intersection)
+
+            above.append([index3, idx_inter1, idx_inter2])
+
+            i1, below_vertices = find_index_or_add(index1, indexes_match, below_vertices, vertices)
+            i2, below_vertices = find_index_or_add(index2, indexes_match, below_vertices, vertices)
+            below_idx_i1, below_vertices = find_index_or_add(idx_inter1, indexes_match, below_vertices, vertices)
+            below_idx_i2, below_vertices = find_index_or_add(idx_inter2, indexes_match, below_vertices, vertices)
+
+            below.append([below_idx_i1, below_idx_i2, i1])
+            below.append([i1, i2, below_idx_i1])
+
+        elif vertice1[2] < cut_value:
+
+            # Two of the vertices are above the cut_value, this means that the triangle must be divided into three smaller triangles:
+            #   - Two triangles are located above the cut_value and must be given to the next partition (above)
+            #   - One triangle is located under the cut value and belongs to this partition (below)
+
+            idx_inter1, vertices, new_intersection = compute_intersection(vertice1, vertice2, cut_value, vertices, initial_num_vertices, already_computed_intersections)
+            if new_intersection is not None :
+                already_computed_intersections.append(new_intersection)
+                intersections_above.append(new_intersection)
+
+            idx_inter2, vertices, new_intersection = compute_intersection(vertice1, vertice3, cut_value, vertices, initial_num_vertices, already_computed_intersections)
+            if new_intersection is not None :
+                already_computed_intersections.append(new_intersection)
+                intersections_above.append(new_intersection)
+
+            above.append([index2, index3, idx_inter2])
+            above.append([index2, idx_inter1, idx_inter2])
+
+            i1, below_vertices = find_index_or_add(index1, indexes_match, below_vertices, vertices)
+            below_idx_i1, below_vertices = find_index_or_add(idx_inter1, indexes_match, below_vertices, vertices)
+            below_idx_i2, below_vertices = find_index_or_add(idx_inter2, indexes_match, below_vertices, vertices)
+
+            below.append([i1, below_idx_i1, below_idx_i2])
+
+        else:
+
+            # All the vertices are over the cut_value, this means that the face must be added to the next partition (above)
+
+            above.append(face)
+
+    patch = pymesh.form_mesh(numpy.array(below_vertices), numpy.array(below))
+
+    return patch, above, vertices, intersections_above
+
+def compute_intersection(vertice_1, vertice_2, cut_value, vertices, initial_num_vertices, already_computed_intersections):
+
+    x1 = round((cut_value-vertice_1[2])*(vertice_2[0]-vertice_1[0])/(vertice_2[2]-vertice_1[2]) + vertice_1[0], 10)
+    y1 = round((cut_value-vertice_1[2])*(vertice_2[1]-vertice_1[1])/(vertice_2[2]-vertice_1[2]) + vertice_1[1], 10)
+
+    intersection = [x1, y1, cut_value]
+    
+    index = -1
+    found = False
+    new_intersection = None
+
+    for i in already_computed_intersections:
+        if not found and i[0][0] == intersection[0] and i[0][1] == intersection[1] and i[0][2] == intersection[2]:
+            index = i[1]
+            found = True
+
+    if index == -1:
+        vertices = numpy.concatenate((vertices, [intersection]))
+        index = len(vertices)-1
+        new_intersection = [intersection, index]
+
+    return index, vertices, new_intersection
+
+
+def find_index_or_add(n_vertice, indexes_match, new_vertices, vertices):
+    idx = indexes_match[n_vertice]
+
+    if (idx == -1):
+        new_vertices.append(vertices[n_vertice])
+        idx = len(new_vertices) - 1
+        indexes_match[n_vertice] = idx
+
+    return idx, new_vertices
+
+def sort_vertices(vertices, face):
+    v1, v2, v3 = sorted([[vertices[face[0]], face[0]], [vertices[face[1]], face[1]], [vertices[face[2]], face[2]]], key=getKey)
+    return v1[0], v1[1], v2[0], v2[1], v3[0], v3[1]
 
 def split_disconnected_meshes(mesh):
 
     connected_faces = []
-    for i in range(mesh.num_vertices):
+    for _ in range(mesh.num_vertices):
         connected_faces.append([])
 
     for face in mesh.faces: 
-        for i in range(len(face)):
+        for i in range(3):
             connected_faces[face[i]].append(face)
 
     connected = numpy.zeros(mesh.num_vertices, dtype=bool)
@@ -227,30 +207,18 @@ def split_disconnected_meshes(mesh):
     while len(q) > 0 :
         vertice = q.pop()
         for face in connected_faces[vertice]:
-            i1 = indexes_match[face[0]]
-            i2 = indexes_match[face[1]]
-            i3 = indexes_match[face[2]]
 
-            if (i1 == -1):
-                vertices.append(mesh.vertices[face[0]])
-                i1 = len(vertices) - 1
-                indexes_match[face[0]] = i1
-                
-            if (i2 == -1):
-                vertices.append(mesh.vertices[face[1]])
-                i2 = len(vertices) - 1
-                indexes_match[face[1]] = i2
+            i1, vertices = find_index_or_add(face[0], indexes_match, vertices, mesh.vertices)
+            i2, vertices = find_index_or_add(face[1], indexes_match, vertices, mesh.vertices)
+            i3, vertices = find_index_or_add(face[2], indexes_match, vertices, mesh.vertices)
 
-            if (i3 == -1):
-                vertices.append(mesh.vertices[face[2]])
-                i3 = len(vertices) - 1
-                indexes_match[face[2]] = i3
+            if [i1, i2, i3] not in faces:
+                faces.append([i1, i2, i3])
 
-            faces.append([i1, i2, i3])
-            for v in range(len(face)):
-                if not connected[face[v]]:
-                    connected[face[v]] = True
-                    q.appendleft(face[v])
+            for i in range(3):
+                if not connected[face[i]]:
+                    connected[face[i]] = True
+                    q.appendleft(face[i])
 
     resulting_mesh = pymesh.form_mesh(numpy.array(vertices), numpy.array(faces))
 

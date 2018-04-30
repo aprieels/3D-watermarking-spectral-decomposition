@@ -4,20 +4,39 @@ import embedding
 import retrieval
 import partitioning
 import random
+import orientation
+import utils
 
-def insert(filename_in, filename_out = 'out.obj', data = 32*[0, 1], secret = 123456, i0 = 0):
+def insert(filename_in, filename_out = 'out.obj', data = 32*[0, 1], axis = [0, 0, 1], secret = 123456, strength = 100, min_vertices = 0):
+
+    print
+    print '########## Embedding started ##########'
 
     scrambled_data = scramble(data, secret)
 
     mesh = pymesh.load_mesh(filename_in)
 
-    patches = partitioning.layers_partitioning(mesh.faces, mesh.vertices, 10) #mesh_partitioning(filename_in, mesh.faces, mesh.num_vertices/500)
+    vertices = orientation.orient_mesh(mesh.vertices, axis)
 
+    print 'Step 1: Mesh oriented'
+
+    patches = partitioning.layers_partitioning(mesh.faces, vertices, 10)# mesh.num_vertices/500)
+
+    print 'Step 2: Mesh patched'
+
+    processed = 0
+    bits_inserted = 0
     updated_vertices = []
 
-    for patch in patches:
+    utils.progress(processed, len(patches), 'Inserting data in patches...')
+
+    for i, patch in enumerate(patches):
 
         inside_vertices, inside_faces, indexes_mapping = remove_border_vertices(patch)
+
+        '''inside_vertices = patch.vertices
+        inside_faces = patch.faces
+        indexes_mapping = range(patch.num_vertices)'''
 
         if len(inside_vertices) > 0:
             B = compute_laplacian_matrix(len(inside_vertices), inside_faces)
@@ -26,16 +45,16 @@ def insert(filename_in, filename_out = 'out.obj', data = 32*[0, 1], secret = 123
             Q = numpy.matmul(B, inside_vertices[:, 1])
             R = numpy.matmul(B, inside_vertices[:, 2])
 
-            P, Q, R = embedding.write(P, Q, R, data=scrambled_data, i0=i0)
+            P, Q, R, count = embedding.write(P, Q, R, scrambled_data, strength, min_vertices, i)
+            bits_inserted = max(bits_inserted, count)
 
-            BM1 = numpy.linalg.inv(B)
-
+            BM1 = numpy.linalg.pinv(B)
 
             watermarked_vertices = numpy.zeros((len(inside_vertices), 3))
 
             watermarked_vertices[:, 0] = numpy.matmul(BM1, P)
             watermarked_vertices[:, 1] = numpy.matmul(BM1, Q)
-            watermarked_vertices[:, 2] = inside_vertices[:, 2]
+            watermarked_vertices[:, 2] = numpy.matmul(BM1, R)
 
         new_vertices = numpy.zeros((patch.num_vertices, 3))
 
@@ -44,22 +63,50 @@ def insert(filename_in, filename_out = 'out.obj', data = 32*[0, 1], secret = 123
                 new_vertices[i] = watermarked_vertices[indexes_mapping[i] - 1]
             else:
                 new_vertices[i] = patch.vertices[i]
-            
+        
         updated_vertices.append(pymesh.form_mesh(new_vertices, patch.faces))
 
+        processed += 1
+        utils.progress(processed, len(patches), 'Inserting data in patches...')
+
+    print
+    print 'Step 3: Data inserted'
+
+    if bits_inserted < len(data):
+        print 'Only %s bits inserted, the bit error rate when retriving data might be significant' % (bits_inserted)
+        
     resulting_mesh = pymesh.merge_meshes(updated_vertices) # vertices_mean(updated_vertices, mesh.num_vertices)
 
     pymesh.save_mesh(filename_out, resulting_mesh)
+
+    '''for i, mesh in enumerate(updated_vertices):
+        pymesh.save_mesh(filename_out+str(i)+'.obj', mesh)'''
+
+    print '########## Embedding finished ##########'
+    print
     
-def extract(filename, secret = 123456, length = 64, i0=0):
+def extract(filename, secret = 123456, length = 64, strength=100, min_vertices = 0):
+
+    print
+    print '########## Retrieval started ##########'
 
     mesh = pymesh.load_mesh(filename)
 
-    patches = partitioning.layers_partitioning(mesh.faces, mesh.vertices, 10) #mesh_partitioning(filename_in, mesh.faces, mesh.num_vertices/500)
+    #mesh = orientation.orient_printed_mesh(mesh)
 
-    print 'patched'
+    print "Step 1: Mesh oriented"
+
+    patches = partitioning.layers_partitioning(mesh.faces, mesh.vertices, 10)#mesh.num_vertices/500)
+
+    # for i, patch in enumerate(patches):
+    #     pymesh.save_mesh(filename+str(i)+'.obj', patch)
+
+    print 'Step 2: Mesh patched'
 
     data = []
+
+    processed = 0
+    utils.progress(processed, len(patches), 'Reading data from patches...')
 
     for patch in patches:
 
@@ -72,9 +119,18 @@ def extract(filename, secret = 123456, length = 64, i0=0):
             Q = numpy.matmul(B, inside_vertices[:, 1])
             R = numpy.matmul(B, inside_vertices[:, 2])
 
-            data.append(retrieval.read(P, Q, R, i0))
+            data.append(retrieval.read(P, Q, R, strength, min_vertices))
+
+        processed += 1
+        utils.progress(processed, len(patches), 'Reading data from patches...')
+
+    print
+    print 'Step 3: Data retrieved'
 
     final_data = unscramble(data_majority(data, length), secret)
+
+    print '########## Retrieval finished ##########'
+    print
 
     return final_data
 
@@ -103,7 +159,8 @@ def data_majority(data, length):
                 sum += d[j]
                 count += 1
                 j += length
-        final_data[i] = round(sum/count)
+        if count > 0:
+            final_data[i] = round(sum/count)
     return final_data
 
 def compute_laplacian_matrix (num_vertices, patch):
@@ -132,11 +189,11 @@ def compute_laplacian_matrix (num_vertices, patch):
             
     eigenValues, eigenVectors = numpy.linalg.eig(laplacian)
 
-    idx = eigenValues.argsort()[::-1]   
+    idx = eigenValues.argsort()
     eigenValues = eigenValues[idx]
     eigenVectors = eigenVectors[:,idx]
 
-    return numpy.transpose(eigenVectors)
+    return eigenVectors
 
 def scramble (data, secret):
     data_copied = data[:] 
