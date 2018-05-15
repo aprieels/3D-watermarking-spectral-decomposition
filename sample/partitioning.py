@@ -40,8 +40,8 @@ def layers_partitioning(faces, vertices, partitions):
 
     patches = []
 
-    max_z = numpy.max(vertices[:, 2])
-    min_z = numpy.min(vertices[:, 2])
+    max_z = numpy.max(vertices[:, 2]) + 0.00000001
+    min_z = numpy.min(vertices[:, 2]) - 0.00000001
 
     interval_z = (max_z-min_z)/partitions
 
@@ -155,14 +155,13 @@ def compute_intersection(vertice_1, vertice_2, cut_value, vertices, initial_num_
     intersection = [x1, y1, cut_value]
     
     index = -1
-    found = False
     new_intersection = None
 
     for i in already_computed_intersections:
-        if not found and i[0][0] == intersection[0] and i[0][1] == intersection[1] and i[0][2] == intersection[2]:
+        if i[0][0] == intersection[0] and i[0][1] == intersection[1] and i[0][2] == intersection[2]:
             index = i[1]
-            found = True
-
+            break
+            
     if index == -1:
         vertices = numpy.concatenate((vertices, [intersection]))
         index = len(vertices)-1
@@ -238,3 +237,21 @@ def split_disconnected_meshes(mesh):
 
 def getKey(item):
     return item[0][2]
+
+def merge(mesh_list):
+    resulting_vertices = []
+    resulting_faces = []
+
+    count_vertices = 0
+
+    for mesh in mesh_list:
+        for vertice in mesh.vertices:
+            resulting_vertices.append(vertice)
+        for face in mesh.faces:
+            resulting_faces.append(numpy.add(face, count_vertices))
+        count_vertices += mesh.num_vertices
+
+    merged_mesh = pymesh.form_mesh(numpy.array(resulting_vertices), numpy.array(resulting_faces))
+    resulting_mesh, _ = pymesh.remove_duplicated_vertices(merged_mesh)
+
+    return resulting_mesh

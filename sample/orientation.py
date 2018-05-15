@@ -15,17 +15,4 @@ def orient_mesh(vertices, axis):
         vertices = numpy.dot(vertices, rotation_x)
 
     return vertices
-
-def orient_printed_mesh(mesh):
-    vectors = []
-
-    for face in mesh.faces:
-        vectors.append(compute_normal_vector(face, mesh.vertices))
-
-    #Calculer la direction
-
-    return mesh
-
-def compute_normal_vector(face, vertices):
-    direction = numpy.cross(vertices[face[1]] - vertices[face[0]], vertices[face[2]] - vertices[face[1]])
-    return direction
+    
