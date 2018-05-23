@@ -1,6 +1,7 @@
 # 3D Watermarking based on Spectral Decomposition
 
 This repository contains an implementation of the 3D watermarking algorithm proposed by [*Cayre et al*](https://www.sciencedirect.com/science/article/pii/S0923596502001479) based on Spectral Decomposition.
+The `Original` folder contains the implementation of what was exactly described in the paper. The `Layered` folder contains an alternative to this technique more suited to Additive Manufacturing.
 
 ## Getting Started
 
