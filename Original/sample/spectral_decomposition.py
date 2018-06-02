@@ -7,8 +7,9 @@ import random
 import utils
 import distortion
 import sys
+import os
 
-def insert(filename_in, filename_out = 'out.obj', data = 32*[0, 1], axis = [0, 0, 1], secret = 123456, i0 = 100, visual_distance = sys.maxint):
+def insert(filename_in, filename_out = 'out.obj', data = 32*[0, 1], secret = 123456, i0 = 100, partitions = -1):
 
     print
     print '########## Embedding started ##########'
@@ -17,7 +18,9 @@ def insert(filename_in, filename_out = 'out.obj', data = 32*[0, 1], axis = [0, 0
 
     mesh = pymesh.load_mesh(filename_in)
 
-    partitions = mesh.num_vertices/500
+    if partitions == -1:
+        partitions = mesh.num_vertices/500
+
     patches, mapping = partitioning.mesh_partitioning(filename_in, mesh, partitions)
 
     print 'Step 1: Mesh patched'
@@ -28,7 +31,15 @@ def insert(filename_in, filename_out = 'out.obj', data = 32*[0, 1], axis = [0, 0
 
     utils.progress(processed, len(patches), 'Inserting data in patches...')
 
-    for patch in patches:
+    for i, patch in enumerate(patches):
+
+        npy_file = 'saved_eig/' + str(partitions) + '/embedding_' + str(i) + '.npy'
+
+        if os.path.exists(npy_file) :
+            B = numpy.load(npy_file)
+        else :
+            B = compute_laplacian_matrix(patch.num_vertices, patch.faces)
+            numpy.save(npy_file, B)
 
         B = compute_laplacian_matrix(patch.num_vertices, patch.faces)
 
@@ -72,15 +83,20 @@ def insert(filename_in, filename_out = 'out.obj', data = 32*[0, 1], axis = [0, 0
 
     print '########## Embedding finished ##########'
     print
+
+    return bits_inserted
     
-def extract(filename, secret = 123456, length = 64, i0=100):
+def extract(filename, secret = 123456, length = 64, i0=100, partitions = -1):
 
     print
     print '########## Retrieval started ##########'
 
     mesh = pymesh.load_mesh(filename)
 
-    patches, _ = partitioning.mesh_partitioning(filename, mesh, mesh.num_vertices/500)
+    if partitions == -1:
+        partitions = mesh.num_vertices/500
+
+    patches, _ = partitioning.mesh_partitioning(filename, mesh, partitions)
 
     print 'Step 1: Mesh patched'
 
@@ -89,8 +105,16 @@ def extract(filename, secret = 123456, length = 64, i0=100):
     processed = 0
     utils.progress(processed, len(patches), 'Reading data from patches...')
 
-    for patch in patches:
-        
+    for i, patch in enumerate(patches):
+
+        npy_file = 'saved_eig/' + str(partitions) + '/retrieval_' + str(i) + '.npy'
+
+        if os.path.exists(npy_file) :
+            B = numpy.load(npy_file)
+        else :
+            B = compute_laplacian_matrix(patch.num_vertices, patch.faces)
+            numpy.save(npy_file, B)
+
         B = compute_laplacian_matrix(patch.num_vertices, patch.faces)
 
         P = numpy.matmul(B, patch.vertices[:, 0])

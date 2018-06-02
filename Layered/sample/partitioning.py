@@ -55,7 +55,7 @@ def layers_partitioning(faces, vertices, partitions):
         patch, remaining_faces, vertices, already_computed_intersections = separate_vertices(remaining_faces, vertices, cut_value, initial_num_vertices, already_computed_intersections)
         cut_value += interval_z
 
-        disconnected_meshes = [patch]#split_disconnected_meshes(patch)
+        disconnected_meshes = split_disconnected_meshes(patch)
 
         for mesh_part in disconnected_meshes:
             patches.append(mesh_part)

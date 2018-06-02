@@ -7,3 +7,5 @@ import embedding
 import retrieval
 import spectral_decomposition
 import partitioning
+import distortion
+import attacks

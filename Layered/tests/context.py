@@ -8,3 +8,5 @@ import orientation
 import partitioning
 import retrieval
 import spectral_decomposition
+import distortion
+import attacks

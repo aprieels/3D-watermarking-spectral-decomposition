@@ -1,10 +1,6 @@
 
 import numpy
 
-import plotly
-import plotly.plotly as py
-import plotly.graph_objs as go
-
 def write(P, Q, R, data, i0, k = 100):
 
     S = numpy.add(P**2, numpy.add(Q**2, R**2))
@@ -12,6 +8,7 @@ def write(P, Q, R, data, i0, k = 100):
     percentile = numpy.percentile(S, i0)
 
     count = 0
+    inserted = 0
 
     for i in range(0, len(P)):
 
@@ -57,10 +54,11 @@ def write(P, Q, R, data, i0, k = 100):
                 values[max_index] = C_max                    
 
                 [P[i], Q[i], R[i]] = values
+                inserted += 1
 
             count += 1
 
-    return P, Q, R, count
+    return P, Q, R, inserted
 
 def get_key(item):
     return item[0]

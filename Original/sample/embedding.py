@@ -8,6 +8,7 @@ def write(P, Q, R, data, i0, k = 100):
     percentile = numpy.percentile(S, i0)
 
     count = 0
+    inserted = 0
 
     for i in range(0, len(P)):
 
@@ -53,8 +54,9 @@ def write(P, Q, R, data, i0, k = 100):
             [P[i], Q[i], R[i]] = values
 
             count += 1
+            inserted += 1
 
-    return P, Q, R, count
+    return P, Q, R, inserted
 
 def get_key(item):
     return item[0]

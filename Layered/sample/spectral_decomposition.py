@@ -8,8 +8,9 @@ import orientation
 import utils
 import distortion
 import sys
+import os
 
-def insert(filename_in, filename_out = 'out.obj', data = 32*[0, 1], axis = [0, 0, 1], secret = 123456, i0 = 100, visual_distance = sys.maxint):
+def insert(filename_in, filename_out = 'out.obj', data = 32*[0, 1], axis = [0, 0, 1], secret = 123456, i0 = 100, partitions = -1, visual_distance = sys.maxint):
 
     print
     print '########## Embedding started ##########'
@@ -20,9 +21,12 @@ def insert(filename_in, filename_out = 'out.obj', data = 32*[0, 1], axis = [0, 0
 
     vertices = orientation.orient_mesh(mesh.vertices, axis)
 
+    if partitions == -1:
+        partitions = mesh.num_vertices/500
+
     print 'Step 1: Mesh oriented'
 
-    patches = partitioning.layers_partitioning(mesh.faces, vertices, 25)# mesh.num_vertices/500)
+    patches = partitioning.layers_partitioning(mesh.faces, vertices, partitions)
 
     print 'Step 2: Mesh patched'
 
@@ -34,18 +38,17 @@ def insert(filename_in, filename_out = 'out.obj', data = 32*[0, 1], axis = [0, 0
 
     for i, patch in enumerate(patches):
 
-        '''if patch.num_vertices < i0:
-            print ''
-            print 'Not enough vertices in patch, discarded'
-            updated_vertices.append(patch)
-            processed += 1
-            utils.progress(processed, len(patches), 'Inserting data in patches...')
-            continue'''
-
         inside_vertices, inside_faces, indexes_mapping = remove_border_vertices(patch)
 
         if len(inside_vertices) > 0:
-            B = compute_laplacian_matrix(len(inside_vertices), inside_faces)
+
+            npy_file = 'saved_eig/' + str(partitions) + '/embedding_' + str(i) + '.npy'
+
+            if os.path.exists(npy_file) :
+                B = numpy.load(npy_file)
+            else :
+                B = compute_laplacian_matrix(len(inside_vertices), inside_faces)
+                numpy.save(npy_file, B)
 
             P = numpy.matmul(B, inside_vertices[:, 0])
             Q = numpy.matmul(B, inside_vertices[:, 1])
@@ -95,15 +98,20 @@ def insert(filename_in, filename_out = 'out.obj', data = 32*[0, 1], axis = [0, 0
 
     print '########## Embedding finished ##########'
     print
+
+    return bits_inserted
     
-def extract(filename, secret = 123456, length = 64, i0=100):
+def extract(filename, secret = 123456, length = 64, i0=100, partitions = -1):
 
     print
     print '########## Retrieval started ##########'
 
     mesh = pymesh.load_mesh(filename)
 
-    patches = partitioning.layers_partitioning(mesh.faces, mesh.vertices, 25)# mesh.num_vertices/500)
+    if partitions == -1:
+        partitions = mesh.num_vertices/500
+
+    patches = partitioning.layers_partitioning(mesh.faces, mesh.vertices, partitions)
 
     print 'Step 1: Mesh patched'
 
@@ -112,15 +120,19 @@ def extract(filename, secret = 123456, length = 64, i0=100):
     processed = 0
     utils.progress(processed, len(patches), 'Reading data from patches...')
 
-    for patch in patches:
-
-        '''if patch.num_vertices < i0:
-            continue'''
+    for i, patch in enumerate(patches):
 
         inside_vertices, inside_faces, _ = remove_border_vertices(patch)
         
         if len(inside_vertices):
-            B = compute_laplacian_matrix(len(inside_vertices), inside_faces)
+            
+            npy_file = 'saved_eig/' + str(partitions) + '/retrieval_' + str(i) + '.npy'
+
+            if os.path.isfile(npy_file) :
+                B = numpy.load(npy_file)
+            else :
+                B = compute_laplacian_matrix(len(inside_vertices), inside_faces)
+                numpy.save(npy_file, B)
 
             P = numpy.matmul(B, inside_vertices[:, 0])
             Q = numpy.matmul(B, inside_vertices[:, 1])

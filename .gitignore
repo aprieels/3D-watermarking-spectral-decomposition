@@ -1,1 +1,5 @@
 *.pyc
+Layered/tests/saved_eig/*
+Original/tests/saved_eig/*
+Layered/tests/watermarked_models/generated/*
+Original/tests/watermarked_models/generated/*
