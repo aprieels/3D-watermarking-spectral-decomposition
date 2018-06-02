@@ -1,8 +1,12 @@
-import numpy
+
+import numpy as np
 from scipy import spatial
 
 import utils
 
+'''
+    Computes the RMS Error between two meshes
+'''
 def rms_error(original_mesh, watermarked_mesh):
     if original_mesh.num_vertices != watermarked_mesh.num_vertices:
         return -1 
@@ -10,10 +14,13 @@ def rms_error(original_mesh, watermarked_mesh):
     squared_dist = 0
     for i in range(original_mesh.num_vertices) :
         squared_dist += spatial.distance.euclidean(original_mesh.vertices[i], watermarked_mesh.vertices[i])**2
-    dist = numpy.sqrt(squared_dist)
+    dist = np.sqrt(squared_dist)
 
     return dist
 
+'''
+    Computes a Local Smoothness metric between two meshes
+'''
 def local_smoothness(original_mesh, watermarked_mesh):
     if original_mesh.num_vertices != watermarked_mesh.num_vertices:
         return -1 
@@ -54,7 +61,9 @@ def local_smoothness(original_mesh, watermarked_mesh):
     
     return (distance_GL_sum + distance_sum)/(2*original_mesh.num_vertices)
 
-
+'''
+    Computes the Symmetrical Hausdorff Distancce between two meshes
+'''
 def hausdorff_distance(original_mesh, watermarked_mesh):
     if original_mesh.num_vertices != watermarked_mesh.num_vertices:
         return -1 

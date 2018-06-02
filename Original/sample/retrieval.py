@@ -1,24 +1,25 @@
 
 import numpy
 
-def read(P, Q, R, i0):
+def read(P, Q, R, strength):
 
+    # Compute the maximum frequency from which we should read data
     S = numpy.add(P**2, numpy.add(Q**2, R**2))
-
-    percentile = numpy.percentile(S, i0)
+    percentile = numpy.percentile(S, strength)
 
     data = []
     
     for i in range(0, len(P)):
 
-        if S[i] >= percentile:
+        if S[i] >= percentile: #This frequency should not be considered, add 0.5 to the list of data so it doesn't have an impact on the retrieved data but the order remains correct
             data.append(0.5)
-        else :
+        else : #This frequency contains aa bit that should be read
 
             C_min, C_inter, C_max = sorted([P[i], Q[i], R[i]])
             
             Mean = 0.5*C_max + 0.5*C_min
 
+            # We use 4 intervals, so we want to know in which half C_inter is located
             if C_inter < Mean :
                 Min = C_min
                 Max = Mean
@@ -28,6 +29,7 @@ def read(P, Q, R, i0):
 
             Mean = (Min + Max)/2
 
+            # Read the data bit
             if C_inter >= Mean:
                 data.append(1)
             else:

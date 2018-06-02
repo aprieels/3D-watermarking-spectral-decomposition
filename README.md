@@ -7,9 +7,10 @@ The `Original` folder contains the implementation of what was exactly described 
 
 ### Dependencies
 
-This project uses the following packages :
+This project uses the following libraries :
 
 * [*NumPy*](http://www.numpy.org/)
+* [*SciPy*](http://www.scipy.org/)
 * [*PyMesh*](http://pymesh.readthedocs.io/en/latest/#)
 
 ### Installation
@@ -29,7 +30,7 @@ The main functions are located inside `sample/spectral_decomposition.py` :
 
 ## Running the tests
 
-There is no unit testing implemented at this time. To perform tests, simply run `make tests`. This command will first insert a watermark then read it back and print the number of errors found. The visual deformations introduced by the watermark can be observed by opening the `tests/watermarked_models/out.obj` file.
+There is no unit testing implemented at this time. To perform tests, simply run `make tests-original` or `make tests-layered`. This command will first insert a watermark then read it back and print the number of errors found. The visual deformations introduced by the watermark can be observed by opening the `tests/watermarked_models/out.obj` file.
 
 ## Author
 

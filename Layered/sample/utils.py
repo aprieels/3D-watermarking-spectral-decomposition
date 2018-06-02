@@ -1,6 +1,9 @@
 import sys
 import numpy
 
+'''
+    Set a progress bar, with a @total and a current value of @count
+'''
 def progress(count, total, prefix=''):
     bar_length = 50
     filled_len = int(round(bar_length * count / float(total)))
