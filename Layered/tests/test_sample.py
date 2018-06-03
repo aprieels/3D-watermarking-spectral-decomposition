@@ -129,12 +129,12 @@ def test_attacks():
         for strength in [1, 2, 3, 5, 7, 10, 20, 30, 50, 70, 100]:  
 
             # Read the watermarked mesh
-            file_name = "watermarked_models/generated/bunny_strength"+str(strength)+ "_layers" + str(layers) + ".obj"
+            file_name = "watermarked_models/generated/bunny_strength"+str(strength)+ "_patches" + str(layers) + ".obj"
             data = [0, 1]*32
             watermarked_mesh = pymesh.load_mesh(file_name) 
             
             for iterations in [1, 2, 3, 5, 7, 10]:
-                file_smoothed = "watermarked_models/generated/smoothed/bunny_strength"+str(strength)+ "_layers" + str(layers) + "_iterations" + str(iterations) + ".obj"
+                file_smoothed = "watermarked_models/generated/smoothed/bunny_strength"+str(strength)+ "_patches" + str(layers) + "_iterations" + str(iterations) + ".obj"
                 # Smooth the model then save it
                 pymesh.save_mesh(file_smoothed, attacks.smoothing(watermarked_mesh, iterations))
                 # Extraction of the watermark
