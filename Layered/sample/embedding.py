@@ -62,7 +62,7 @@ def write(P, Q, R, data, strength, k = 100):
                 [P[i], Q[i], R[i]] = values
                 inserted += 1
 
-                count += 1
+            count += 1
 
     return P, Q, R, inserted
 

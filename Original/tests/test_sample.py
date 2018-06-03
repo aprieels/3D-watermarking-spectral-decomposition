@@ -65,7 +65,7 @@ def generate_sample():
 
                 # Insertion of the watermark
                 start = time.time()
-                capacity = spectral_decomposition.insert("source_models/bunny_new.stl", out_name, data, 123456, strength, patches, 2)
+                capacity = spectral_decomposition.insert("source_models/bunny_new.stl", out_name, data, 123456, strength, patches)
                 middle = time.time()
 
                 # Extraction of the watermark
