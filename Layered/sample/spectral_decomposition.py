@@ -87,7 +87,7 @@ def insert(filename_in, filename_out = 'out.obj', data = 32*[0, 1], axis = [0, 0
                 print 'Too much distortions, patch discarded ', distance
                 watermarked_vertices = inside_vertices
             else :
-                bits_inserted = max(bits_inserted, count)
+                bits_inserted += count
 
         new_vertices = np.zeros((patch.num_vertices, 3))
 

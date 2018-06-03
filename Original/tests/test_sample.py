@@ -51,7 +51,7 @@ def generate_sample():
         lines_count = len(output.readlines())
         count = 0
 
-        for patches in range(100, 10, -10) :
+        for patches in range(100, 20, -10) :
             for strength in [1, 2, 3, 5, 7, 10, 20, 30, 50, 70, 100]:
                 if count < lines_count:
                     count += 1 

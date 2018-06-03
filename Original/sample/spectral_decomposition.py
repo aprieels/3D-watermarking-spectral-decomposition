@@ -68,7 +68,7 @@ def insert(filename_in, filename_out = 'out.obj', data = 32*[0, 1], secret = 123
         
         updated_vertices.append(pymesh.form_mesh(new_vertices, patch.faces))
 
-        bits_inserted = max(bits_inserted, count)
+        bits_inserted += count
 
         # Update the progress bar
         processed += 1
